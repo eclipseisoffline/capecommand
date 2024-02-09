@@ -18,6 +18,9 @@ This mod is not an official Minecraft product and is not approved by or associat
 
 ## Usage
 
+Mod builds can be found [here](https://github.com/eclipseisoffline/capecommand/packages/2064482). This mod requires the Fabric API,
+and is currently only available for Minecraft 1.20.4, though version port requests are welcome, just open an issue at the issue tracker.
+
 When installed on the client, you'll be able to use the `/cape` command in single-player worlds,
 and on servers that also have the Cape Command mod installed.
 
