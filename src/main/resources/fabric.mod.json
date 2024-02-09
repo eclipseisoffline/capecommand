@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "capecommand",
+  "version": "${version}",
+  "name": "Cape Command",
+  "description": "Adds a /cape command to use whichever cape you like",
+  "authors": [
+    {
+      "name": "eclipseisoffline",
+      "contact": {
+        "homepage": "https://github.com/eclipseisoffline"
+      }
+    }
+  ],
+  "contact": {
+    "homepage": "https://github.com/eclipseisoffline/capecommand",
+    "issues": "https://github.com/eclipseisoffline/capecommand/issues",
+    "sources": "https://github.com/eclipseisoffline/capecommand"
+  },
+  "license": "GPLv3",
+  "icon": "assets/capecommand/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "xyz.eclipseisoffline.capecommand.CapeCommand"
+    ],
+    "client": [
+      "xyz.eclipseisoffline.capecommand.CapeCommand"
+    ]
+  },
+  "mixins": [
+    "capecommand.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
