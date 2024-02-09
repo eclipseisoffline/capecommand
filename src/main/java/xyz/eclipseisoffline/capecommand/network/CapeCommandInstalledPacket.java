@@ -6,14 +6,17 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 public record CapeCommandInstalledPacket() implements FabricPacket {
-    public static final PacketType<CapeCommandInstalledPacket> TYPE = PacketType.create(new Identifier("capecommand", "installed"), CapeCommandInstalledPacket::new);
+
+    public static final PacketType<CapeCommandInstalledPacket> TYPE = PacketType.create(
+            new Identifier("capecommand", "installed"), CapeCommandInstalledPacket::new);
 
     public CapeCommandInstalledPacket(PacketByteBuf packetBuffer) {
         this();
     }
 
     @Override
-    public void write(PacketByteBuf packetBuffer) {}
+    public void write(PacketByteBuf packetBuffer) {
+    }
 
     @Override
     public PacketType<?> getType() {

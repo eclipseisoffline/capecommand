@@ -14,6 +14,7 @@ public class CapeCommandSuggestionProvider implements SuggestionProvider<ServerC
     @Override
     public CompletableFuture<Suggestions> getSuggestions(
             CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-        return CommandSource.suggestMatching(Arrays.stream(Cape.values()).map(cape -> cape.toString().toLowerCase()), builder);
+        return CommandSource.suggestMatching(
+                Arrays.stream(Cape.values()).map(cape -> cape.toString().toLowerCase()), builder);
     }
 }

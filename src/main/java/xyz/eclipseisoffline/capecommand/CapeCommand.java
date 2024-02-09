@@ -5,28 +5,19 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.impl.networking.NetworkHandlerExtensions;
-import net.fabricmc.fabric.impl.networking.client.ClientPlayNetworkAddon;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
-import org.lwjgl.system.windows.HARDWAREINPUT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.eclipseisoffline.capecommand.mixin.ServerConfigurationNetworkHandlerAccessor;
 import xyz.eclipseisoffline.capecommand.network.CapeCommandInstalledPacket;
 
 public class CapeCommand implements ModInitializer, ClientModInitializer {
+
     public static final Logger LOGGER = LoggerFactory.getLogger("CapeCommand");
     public static final CapeConfig CONFIG = new CapeConfig();
 
@@ -37,61 +28,74 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
         CONFIG.readFromConfig();
 
         LOGGER.info("Registering cape command");
-        CommandRegistrationCallback.EVENT.register(((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
-                CommandManager.literal("cape")
-                        .then(CommandManager.argument("name", StringArgumentType.word())
-                                .suggests(new CapeCommandSuggestionProvider())
-                                .executes(context -> {
-                                    if (!context.getSource().isExecutedByPlayer()) {
-                                        context.getSource().sendError(Text.of("Capes can only be applied to players!"));
-                                        return 1;
-                                    }
+        CommandRegistrationCallback.EVENT.register(
+                ((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
+                        CommandManager.literal("cape")
+                                .then(CommandManager.argument("name", StringArgumentType.word())
+                                        .suggests(new CapeCommandSuggestionProvider())
+                                        .executes(context -> {
+                                            if (!context.getSource().isExecutedByPlayer()) {
+                                                context.getSource().sendError(
+                                                        Text.of("Capes can only be applied to players!"));
+                                                return 1;
+                                            }
 
-                                    String capeString = StringArgumentType.getString(context, "name");
-                                    Cape cape;
-                                    try {
-                                        cape = Cape.valueOf(capeString.toUpperCase());
-                                    } catch (IllegalArgumentException exception) {
-                                        context.getSource().sendError(Text.of("Unknown cape"));
-                                        return 1;
-                                    }
+                                            String capeString = StringArgumentType.getString(
+                                                    context, "name");
+                                            Cape cape;
+                                            try {
+                                                cape = Cape.valueOf(capeString.toUpperCase());
+                                            } catch (IllegalArgumentException exception) {
+                                                context.getSource()
+                                                        .sendError(Text.of("Unknown cape"));
+                                                return 1;
+                                            }
 
-                                    assert context.getSource().getPlayer() != null;
-                                    CONFIG.setPlayerCape(context.getSource().getPlayer().getGameProfile(), cape);
+                                            assert context.getSource().getPlayer() != null;
+                                            CONFIG.setPlayerCape(context.getSource().getPlayer()
+                                                    .getGameProfile(), cape);
 
-                                    String clientNote = cape.requiresClient() ? "Note that this cape is only visible to players with the Cape Command installed."
-                                            : "Note that this cape is only visible to you and other players that have Cape Command installed.";
-                                    context.getSource().sendFeedback(() -> Text.of("Cape saved. Relog for it to apply. " + clientNote), false);
+                                            String clientNote = cape.requiresClient()
+                                                    ? "Note that this cape is only visible to players with the Cape Command installed."
+                                                    : "Note that this cape is only visible to you and other players that have Cape Command installed.";
+                                            context.getSource().sendFeedback(() -> Text.of(
+                                                    "Cape saved. Relog for it to apply. "
+                                                            + clientNote), false);
 
-                                    return 0;
-                                }))
-                        .then(CommandManager.literal("reset")
-                                .executes(context -> {
-                                    if (!context.getSource().isExecutedByPlayer()) {
-                                        context.getSource().sendError(Text.of("Capes can only be applied to players!"));
-                                        return 1;
-                                    }
+                                            return 0;
+                                        }))
+                                .then(CommandManager.literal("reset")
+                                        .executes(context -> {
+                                            if (!context.getSource().isExecutedByPlayer()) {
+                                                context.getSource().sendError(
+                                                        Text.of("Capes can only be applied to players!"));
+                                                return 1;
+                                            }
 
-                                    assert context.getSource().getPlayer() != null;
-                                    CONFIG.resetPlayerCape(context.getSource().getPlayer().getGameProfile());
-                                    context.getSource().sendFeedback(() -> Text.of("Cape reset. Relog for it to apply."), false);
-                                    return 0;
-                                })))));
+                                            assert context.getSource().getPlayer() != null;
+                                            CONFIG.resetPlayerCape(context.getSource().getPlayer()
+                                                    .getGameProfile());
+                                            context.getSource().sendFeedback(() -> Text.of(
+                                                    "Cape reset. Relog for it to apply."), false);
+                                            return 0;
+                                        })))));
 
         LOGGER.info("Registering server network handlers");
-        ServerConfigurationNetworking.registerGlobalReceiver(CapeCommandInstalledPacket.TYPE, ((packet, networkHandler, responseSender) -> {
-            GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) networkHandler).getProfile();
-            LOGGER.info("Player " + profile.getName() + " has cape commands installed client side");
-            CONFIG.registerCapeCommandPlayer(profile);
-        }));
-        ServerPlayConnectionEvents.DISCONNECT.register(((handler, server) -> {
-            CONFIG.unregisterCapeCommandPlayer(handler.getPlayer());
-        }));
+        ServerConfigurationNetworking.registerGlobalReceiver(CapeCommandInstalledPacket.TYPE,
+                ((packet, networkHandler, responseSender) -> {
+                    GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) networkHandler).getProfile();
+                    LOGGER.info("Player " + profile.getName()
+                            + " has cape commands installed client side");
+                    CONFIG.registerCapeCommandPlayer(profile);
+                }));
+        ServerPlayConnectionEvents.DISCONNECT.register(
+                ((handler, server) -> CONFIG.unregisterCapeCommandPlayer(handler.getPlayer())));
     }
 
     @Override
     public void onInitializeClient() {
         LOGGER.info("Registering client network handlers");
-        ClientConfigurationConnectionEvents.INIT.register(((handler, client) -> handler.sendPacket(ClientPlayNetworking.createC2SPacket(new CapeCommandInstalledPacket()))));
+        ClientConfigurationConnectionEvents.INIT.register(((handler, client) -> handler.sendPacket(
+                ClientPlayNetworking.createC2SPacket(new CapeCommandInstalledPacket()))));
     }
 }

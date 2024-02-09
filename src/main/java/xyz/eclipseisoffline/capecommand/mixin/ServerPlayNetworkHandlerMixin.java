@@ -28,7 +28,8 @@ import xyz.eclipseisoffline.capecommand.network.PlayerListS2CPacketEntriesUpdate
 @Mixin(ServerPlayNetworkHandler.class)
 public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkHandler {
 
-    @Shadow public ServerPlayerEntity player;
+    @Shadow
+    public ServerPlayerEntity player;
 
     public ServerPlayNetworkHandlerMixin(MinecraftServer server,
             ClientConnection connection,
@@ -44,18 +45,21 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                 for (Entry entry : playerListS2CPacket.getEntries()) {
                     GameProfile profile = entry.profile();
                     if (profile != null
-                            && (CapeCommand.CONFIG.hasCapeCommand(player) || profile.getId().equals(player.getUuid()))
+                            && (CapeCommand.CONFIG.hasCapeCommand(player) || profile.getId()
+                            .equals(player.getUuid()))
                             && CapeCommand.CONFIG.getPlayerCape(profile) != null) {
-                            profile = new GameProfile(profile.getId(), profile.getName());
+                        profile = new GameProfile(profile.getId(), profile.getName());
 
-                            assert entry.profile() != null;
-                            profile.getProperties().putAll(entry.profile().getProperties());
-                            setCustomCapeInGameProfile(profile);
-                        }
+                        assert entry.profile() != null;
+                        profile.getProperties().putAll(entry.profile().getProperties());
+                        setCustomCapeInGameProfile(profile);
+                    }
                     entries.add(new Entry(entry.profileId(), profile, entry.listed(),
-                            entry.latency(), entry.gameMode(), entry.displayName(), entry.chatSession()));
+                            entry.latency(), entry.gameMode(), entry.displayName(),
+                            entry.chatSession()));
                 }
-                ((PlayerListS2CPacketEntriesUpdater) playerListS2CPacket).capeCommand$setEntries(entries);
+                ((PlayerListS2CPacketEntriesUpdater) playerListS2CPacket).capeCommand$setEntries(
+                        entries);
             }
         }
         super.send(packet, callbacks);
@@ -63,7 +67,8 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
     @Unique
     private void setCustomCapeInGameProfile(GameProfile gameProfile) {
-        Property texturesProperty = gameProfile.getProperties().get("textures").stream().findAny().orElse(null);
+        Property texturesProperty = gameProfile.getProperties().get("textures").stream().findAny()
+                .orElse(null);
         if (texturesProperty == null) {
             return;
         }

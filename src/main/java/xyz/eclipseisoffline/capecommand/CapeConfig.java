@@ -17,6 +17,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public class CapeConfig {
+
     private static final Path CONFIG_FILE = Path.of("playercapes.json");
     private final Map<UUID, Cape> playerCapes = new HashMap<>();
     private final List<GameProfile> capeCommandPlayers = new ArrayList<>();
@@ -65,9 +66,11 @@ public class CapeConfig {
         Path capeConfigPath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
         if (Files.exists(capeConfigPath)) {
             try {
-                JsonObject capesJson = JsonParser.parseString(Files.readString(capeConfigPath)).getAsJsonObject();
+                JsonObject capesJson = JsonParser.parseString(Files.readString(capeConfigPath))
+                        .getAsJsonObject();
                 for (Entry<String, JsonElement> playerCape : capesJson.entrySet()) {
-                    playerCapes.put(UUID.fromString(playerCape.getKey()), Cape.valueOf(playerCape.getValue().getAsString()));
+                    playerCapes.put(UUID.fromString(playerCape.getKey()),
+                            Cape.valueOf(playerCape.getValue().getAsString()));
                 }
             } catch (IOException exception) {
                 CapeCommand.LOGGER.warn("Failed to read player cape config!", exception);
