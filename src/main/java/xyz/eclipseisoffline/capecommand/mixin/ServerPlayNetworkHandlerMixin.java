@@ -45,8 +45,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                 for (Entry entry : playerListS2CPacket.getEntries()) {
                     GameProfile profile = entry.profile();
                     if (profile != null
-                            && (CapeCommand.CONFIG.hasCapeCommand(player) || profile.getId()
-                            .equals(player.getUuid()))
+                            && (CapeCommand.CONFIG.hasCapeCommand(player) || profile.getId().equals(player.getUuid()))
                             && CapeCommand.CONFIG.getPlayerCape(profile) != null) {
                         profile = new GameProfile(profile.getId(), profile.getName());
 
@@ -69,12 +68,15 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private void setCustomCapeInGameProfile(GameProfile gameProfile) {
         Property texturesProperty = gameProfile.getProperties().get("textures").stream().findAny()
                 .orElse(null);
-        if (texturesProperty == null) {
-            return;
+        JsonObject textures;
+        if (texturesProperty != null) {
+            String texturesJson = new String(Base64.getDecoder().decode(texturesProperty.value()));
+            textures = JsonParser.parseString(texturesJson).getAsJsonObject();
+        } else {
+            // Create an empty textures object for offline players / dev accounts
+            textures = new JsonObject();
+            textures.add("textures", new JsonObject());
         }
-
-        String texturesJson = new String(Base64.getDecoder().decode(texturesProperty.value()));
-        JsonObject textures = JsonParser.parseString(texturesJson).getAsJsonObject();
 
         JsonObject capeObject;
         if (textures.getAsJsonObject("textures").get("CAPE") != null) {

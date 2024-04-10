@@ -5,22 +5,28 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.S2CConfigurationChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.packet.CustomPayload.Id;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.eclipseisoffline.capecommand.mixin.ServerConfigurationNetworkHandlerAccessor;
-import xyz.eclipseisoffline.capecommand.network.CapeCommandInstalledPacket;
 
 public class CapeCommand implements ModInitializer, ClientModInitializer {
-
+    public static final Id<CustomPayload> INSTALLED_ID = new Id<>(
+            Identifier.of("capecommand", "installed"));
     public static final Logger LOGGER = LoggerFactory.getLogger("CapeCommand");
     public static final CapeConfig CONFIG = new CapeConfig();
 
@@ -72,13 +78,15 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
                                         })))));
 
         LOGGER.info("Registering server network handlers");
-        ServerConfigurationNetworking.registerGlobalReceiver(CapeCommandInstalledPacket.TYPE,
-                ((packet, networkHandler, responseSender) -> {
-                    GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) networkHandler).getProfile();
-                    LOGGER.info("Player " + profile.getName()
-                            + " has cape commands installed client side");
-                    CONFIG.registerCapeCommandPlayer(profile);
-                }));
+        S2CConfigurationChannelEvents.REGISTER.register((handler, sender, server, channels) -> {
+            if (ServerConfigurationNetworking.canSend(handler, INSTALLED_ID)) {
+                GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) handler).getProfile();
+                LOGGER.info("Player {} has cape commands installed client side", profile.getName());
+                CONFIG.registerCapeCommandPlayer(profile);
+            } else {
+                LOGGER.info("cannot send packet");
+            }
+        });
         ServerPlayConnectionEvents.DISCONNECT.register(
                 ((handler, server) -> CONFIG.unregisterCapeCommandPlayer(handler.getPlayer())));
     }
@@ -86,7 +94,18 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
     @Override
     public void onInitializeClient() {
         LOGGER.info("Registering client network handlers");
-        ClientConfigurationConnectionEvents.INIT.register(((handler, client) -> handler.sendPacket(
-                ClientPlayNetworking.createC2SPacket(new CapeCommandInstalledPacket()))));
+        PayloadTypeRegistry.configurationS2C().register(INSTALLED_ID,
+                new PacketCodec<>() {
+                    @Override
+                    public CustomPayload decode(PacketByteBuf buf) {
+                        throw new AssertionError();
+                    }
+
+                    @Override
+                    public void encode(PacketByteBuf buf, CustomPayload value) {
+                        throw new AssertionError();
+                    }
+                });
+        ClientConfigurationNetworking.registerGlobalReceiver(INSTALLED_ID, (payload, context) -> {});
     }
 }
