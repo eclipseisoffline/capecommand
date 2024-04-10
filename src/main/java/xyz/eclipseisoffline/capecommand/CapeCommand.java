@@ -2,6 +2,7 @@ package xyz.eclipseisoffline.capecommand;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
@@ -10,6 +11,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,52 +34,40 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
         CommandRegistrationCallback.EVENT.register(
                 ((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> commandDispatcher.register(
                         CommandManager.literal("cape")
+                                .requires(ServerCommandSource::isExecutedByPlayer)
                                 .then(CommandManager.argument("name", StringArgumentType.word())
                                         .suggests(new CapeCommandSuggestionProvider())
                                         .executes(context -> {
-                                            if (!context.getSource().isExecutedByPlayer()) {
-                                                context.getSource().sendError(
-                                                        Text.of("Capes can only be applied to players!"));
-                                                return 1;
-                                            }
-
                                             String capeString = StringArgumentType.getString(
                                                     context, "name");
                                             Cape cape;
                                             try {
                                                 cape = Cape.valueOf(capeString.toUpperCase());
                                             } catch (IllegalArgumentException exception) {
-                                                context.getSource()
-                                                        .sendError(Text.of("Unknown cape"));
-                                                return 1;
+                                                throw new SimpleCommandExceptionType(Text.of("Unknown cape")).create();
                                             }
 
-                                            assert context.getSource().getPlayer() != null;
-                                            CONFIG.setPlayerCape(context.getSource().getPlayer()
-                                                    .getGameProfile(), cape);
+                                            ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
+                                            if (cape.requiresClient() && !CONFIG.hasCapeCommand(player)) {
+                                                throw new SimpleCommandExceptionType(Text.of("This cape requires you to install the Cape Command mod locally.")).create();
+                                            }
 
-                                            String clientNote = cape.requiresClient()
-                                                    ? "Note that this cape is only visible to players with the Cape Command installed."
-                                                    : "Note that this cape is only visible to you and other players that have Cape Command installed.";
+                                            CONFIG.setPlayerCape(context.getSource()
+                                                    .getPlayerOrThrow().getGameProfile(), cape);
+
+                                            String clientNote = "Note that this cape is only visible to you and other players that have Cape Command installed.";
                                             context.getSource().sendFeedback(() -> Text.of(
                                                     "Cape saved. Relog for it to apply. "
-                                                            + clientNote), false);
+                                                            + clientNote), true);
 
                                             return 0;
                                         }))
                                 .then(CommandManager.literal("reset")
                                         .executes(context -> {
-                                            if (!context.getSource().isExecutedByPlayer()) {
-                                                context.getSource().sendError(
-                                                        Text.of("Capes can only be applied to players!"));
-                                                return 1;
-                                            }
-
-                                            assert context.getSource().getPlayer() != null;
-                                            CONFIG.resetPlayerCape(context.getSource().getPlayer()
-                                                    .getGameProfile());
+                                            CONFIG.resetPlayerCape(context.getSource()
+                                                    .getPlayerOrThrow().getGameProfile());
                                             context.getSource().sendFeedback(() -> Text.of(
-                                                    "Cape reset. Relog for it to apply."), false);
+                                                    "Cape reset. Relog for it to apply."), true);
                                             return 0;
                                         })))));
 
