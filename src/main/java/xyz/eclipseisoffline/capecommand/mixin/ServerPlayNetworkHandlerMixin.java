@@ -47,11 +47,12 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                     if (profile != null
                             && (CapeCommand.CONFIG.hasCapeCommand(player) || profile.getId().equals(player.getUuid()))
                             && CapeCommand.CONFIG.getPlayerCape(profile) != null) {
-                        profile = new GameProfile(profile.getId(), profile.getName());
+                        GameProfile newProfile = new GameProfile(profile.getId(), profile.getName());
 
                         assert entry.profile() != null;
-                        profile.getProperties().putAll(entry.profile().getProperties());
-                        setCustomCapeInGameProfile(profile);
+                        newProfile.getProperties().putAll(entry.profile().getProperties());
+                        setCustomCapeInGameProfile(newProfile);
+                        profile = newProfile;
                     }
                     entries.add(new Entry(entry.profileId(), profile, entry.listed(),
                             entry.latency(), entry.gameMode(), entry.displayName(),
