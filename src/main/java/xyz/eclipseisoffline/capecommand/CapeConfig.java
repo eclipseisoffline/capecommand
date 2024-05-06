@@ -69,8 +69,13 @@ public class CapeConfig {
                 JsonObject capesJson = JsonParser.parseString(Files.readString(capeConfigPath))
                         .getAsJsonObject();
                 for (Entry<String, JsonElement> playerCape : capesJson.entrySet()) {
-                    playerCapes.put(UUID.fromString(playerCape.getKey()),
-                            Cape.valueOf(playerCape.getValue().getAsString()));
+                    try {
+                        playerCapes.put(UUID.fromString(playerCape.getKey()),
+                                Cape.valueOf(playerCape.getValue().getAsString()));
+                    } catch (IllegalArgumentException exception) {
+                        CapeCommand.LOGGER.warn("Read invalid cape for UUID " + playerCape.getKey()
+                                + "! (" + playerCape.getValue().getAsString() + ")");
+                    }
                 }
             } catch (IOException exception) {
                 CapeCommand.LOGGER.warn("Failed to read player cape config!", exception);

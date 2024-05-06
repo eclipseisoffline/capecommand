@@ -83,8 +83,6 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
                 GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) handler).getProfile();
                 LOGGER.info("Player {} has cape commands installed client side", profile.getName());
                 CONFIG.registerCapeCommandPlayer(profile);
-            } else {
-                LOGGER.info("cannot send packet");
             }
         });
         ServerPlayConnectionEvents.DISCONNECT.register(
