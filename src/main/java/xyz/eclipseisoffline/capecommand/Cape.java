@@ -54,8 +54,9 @@ public enum Cape {
     PANCAPE("https://minecraft.wiki/images/Pancape_Cape.png", true),
     PROGRESS_PRIDE("https://minecraft.wiki/images/ProgressPrideCape_Texture_rv3.png", true),
     VANILLA("http://textures.minecraft.net/texture/f9a76537647989f9a0b6d001e320dac591c359e9e61a31f4ce11c88f207f0ad4"),
-    CHERRY_BLOSSOM(
-            "http://textures.minecraft.net/texture/afd553b39358a24edfe3b8a9a939fa5fa4faa4d9a9c3d6af8eafb377fa05c2bb");
+    CHERRY_BLOSSOM("http://textures.minecraft.net/texture/afd553b39358a24edfe3b8a9a939fa5fa4faa4d9a9c3d6af8eafb377fa05c2bb"),
+    FIFTEENTH_ANNIVERSARY("http://textures.minecraft.net/texture/cd9d82ab17fd92022dbd4a86cde4c382a7540e117fae7b9a2853658505a80625"),
+    PURPLE_HEART("http://textures.minecraft.net/texture/cb40a92e32b57fd732a00fc325e7afb00a7ca74936ad50d8e860152e482cfbde");
 
     private final String capeURL;
     private final boolean requiresClient;
