@@ -13,7 +13,7 @@ Feel free to report any bugs, or suggest new features, at the issue tracker.
 
 ## License
 
-This mod is licensed under GNU GPLv3.
+This mod is licensed under GNU LGPLv3.
 
 The textures of all capes included are copyright Mojang Studios. All rights to them
 are owned by Mojang and Microsoft.
@@ -24,7 +24,7 @@ This mod is not an official Minecraft product and is not approved by or associat
 
 Mod builds can be found [here](https://github.com/eclipseisoffline/capecommand/packages/2064482) and on [Modrinth](https://modrinth.com/mod/cape-command).
 
-This mod requires the Fabric API, and is currently available for Minecraft 1.21 and 1.20.5+6/1.20.4 (no longer updated),
+This mod requires the Fabric API, and is currently available for Minecraft 1.21.1+1 and 1.20.5+6/1.20.4 (no longer updated),
 though version port requests are welcome, just open an issue at the issue tracker.
 
 When installed on the client, you'll be able to use the `/cape` command in single-player worlds,
