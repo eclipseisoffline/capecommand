@@ -15,12 +15,26 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.geysermc.geyser.api.GeyserApi;
 
 public class CapeConfig {
 
     private static final Path CONFIG_FILE = Path.of("playercapes.json");
     private final Map<UUID, Cape> playerCapes = new HashMap<>();
     private final List<GameProfile> capeCommandPlayers = new ArrayList<>();
+    private final boolean geyserAvailable;
+
+    public CapeConfig() {
+        boolean geyserAvailable;
+        try {
+            GeyserApi.api();
+            geyserAvailable = true;
+            CapeCommand.LOGGER.info("Geyser compatibility enabled!");
+        } catch (NoClassDefFoundError error) {
+            geyserAvailable = false;
+        }
+        this.geyserAvailable = geyserAvailable;
+    }
 
     public Cape getPlayerCape(GameProfile gameProfile) {
         return playerCapes.get(gameProfile.getId());
@@ -41,7 +55,7 @@ public class CapeConfig {
     }
 
     public boolean hasCapeCommand(ServerPlayerEntity serverPlayerEntity) {
-        return capeCommandPlayers.contains(serverPlayerEntity.getGameProfile());
+        return capeCommandPlayers.contains(serverPlayerEntity.getGameProfile()) || (geyserAvailable && GeyserApi.api().isBedrockPlayer(serverPlayerEntity.getUuid()));
     }
 
     public void unregisterCapeCommandPlayer(ServerPlayerEntity serverPlayerEntity) {

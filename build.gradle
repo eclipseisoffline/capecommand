@@ -12,7 +12,11 @@ base {
     archivesName = project.archives_base_name
 }
 
-repositories {}
+repositories {
+    maven {
+        url = uri("https://repo.opencollab.dev/main/")
+    }
+}
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -20,6 +24,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    compileOnly "org.geysermc.geyser:api:${project.geyser_api_version}"
 }
 
 processResources {
