@@ -55,8 +55,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                         profile = newProfile;
                     }
                     entries.add(new Entry(entry.profileId(), profile, entry.listed(),
-                            entry.latency(), entry.gameMode(), entry.displayName(), entry.showHat(),
-                            entry.listOrder(), entry.chatSession()));
+                            entry.latency(), entry.gameMode(), entry.displayName(), entry.chatSession()));
                 }
                 ((PlayerListS2CPacketEntriesUpdater) playerListS2CPacket).capeCommand$setEntries(
                         entries);
