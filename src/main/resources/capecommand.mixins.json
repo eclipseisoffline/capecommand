@@ -4,7 +4,9 @@
   "package": "xyz.eclipseisoffline.capecommand.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "EntityAccessor",
     "PlayerListS2CPacketMixin",
+    "ServerChunkLoadingManagerAccessor",
     "ServerConfigurationNetworkHandlerAccessor",
     "ServerPlayNetworkHandlerMixin",
     "TextureUrlCheckerMixin"

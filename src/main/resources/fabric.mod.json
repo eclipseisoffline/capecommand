@@ -28,6 +28,7 @@
       "xyz.eclipseisoffline.capecommand.CapeCommand"
     ]
   },
+  "accessWidener": "capecommand.accesswidener",
   "mixins": [
     "capecommand.mixins.json"
   ],

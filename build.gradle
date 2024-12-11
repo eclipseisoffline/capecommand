@@ -28,6 +28,10 @@ dependencies {
     compileOnly "org.geysermc.geyser:api:${project.geyser_api_version}"
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/capecommand.accesswidener")
+}
+
 processResources {
     inputs.property "version", project.version
     inputs.property "supported_versions", project.supported_versions
@@ -41,7 +45,7 @@ processResources {
     }
 }
 
-def targetJavaVersion = 17
+def targetJavaVersion = 21
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
