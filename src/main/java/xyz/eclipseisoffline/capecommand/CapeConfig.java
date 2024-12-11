@@ -27,10 +27,10 @@ public class CapeConfig {
     public CapeConfig() {
         boolean geyserAvailable;
         try {
-            GeyserApi.api();
+            Class.forName("org.geysermc.geyser.api.GeyserApi");
             geyserAvailable = true;
             CapeCommand.LOGGER.info("Geyser compatibility enabled!");
-        } catch (NoClassDefFoundError error) {
+        } catch (NoClassDefFoundError | ClassNotFoundException error) {
             geyserAvailable = false;
         }
         this.geyserAvailable = geyserAvailable;
