@@ -59,7 +59,7 @@ When installed on the server, only clients with the Cape Command mod installed w
 other people's capes. Clients that do not have the Cape Command mod installed will only be able to
 see their own cape, with a few exceptions.
 
-Note: if your server has Geyser installed, then Bedrock players will also be able to see everyone's capes (experimental).
+Note: if your server has Geyser installed, then Bedrock players will also be able to see everyone's capes, as well as use all the capes the mod provides.
 
 ## TODO
 
