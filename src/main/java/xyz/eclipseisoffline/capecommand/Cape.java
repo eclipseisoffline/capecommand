@@ -58,7 +58,19 @@ public enum Cape {
     FIFTEENTH_ANNIVERSARY("http://textures.minecraft.net/texture/cd9d82ab17fd92022dbd4a86cde4c382a7540e117fae7b9a2853658505a80625"),
     PURPLE_HEART("http://textures.minecraft.net/texture/cb40a92e32b57fd732a00fc325e7afb00a7ca74936ad50d8e860152e482cfbde"),
     FOLLOWERS("http://textures.minecraft.net/texture/569b7f2a1d00d26f30efe3f9ab9ac817b1e6d35f4f3cfb0324ef2d328223d350"),
-    MCC_15TH_YEAR("http://textures.minecraft.net/texture/56c35628fe1c4d59dd52561a3d03bfa4e1a76d397c8b9c476c2f77cb6aebb1df");
+    MCC_15TH_YEAR("http://textures.minecraft.net/texture/56c35628fe1c4d59dd52561a3d03bfa4e1a76d397c8b9c476c2f77cb6aebb1df"),
+    MINECRAFT_EXPERIENCE("http://textures.minecraft.net/texture/7658c5025c77cfac7574aab3af94a46a8886e3b7722a895255fbf22ab8652434"),
+    MOJANG_OFFICE("http://textures.minecraft.net/texture/5c29410057e32abec02d870ecb52ec25fb45ea81e785a7854ae8429d7236ca26"),
+    SNIFFER_CAPE("https://minecraft.wiki/images/UnknownCape1_texture.png", true),
+    SNAIL_CAPE("https://minecraft.wiki/images/SnailCape_texture.png", true),
+    FROG_CAPE("https://minecraft.wiki/images/FrogAPI_texture.png", true),
+    XBOX_1ST_BIRTHDAY("https://minecraft.wiki/images/Xbox_1st_Birthday_Cape_%28texture%29.png", true),
+    AWESOM_CAEP("https://minecraft.wiki/images/Awesom_Cape.png", true),
+    BLONK_CAEP("https://minecraft.wiki/images/Blonk_Cape.png", true),
+    NO_CIRCLE_CAEP("https://minecraft.wiki/images/No_circle_Cape.png", true),
+    NYAN_CAEP("https://minecraft.wiki/images/Nyan_Cape.png", true),
+    SQUID_CAEP("https://minecraft.wiki/images/Squid_Cape.png", true),
+    VETERINARIAN_CAEP("https://minecraft.wiki/images/Veterinarian_Cape.png", true);
 
     private final String capeURL;
     private final boolean requiresClient;
