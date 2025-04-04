@@ -35,7 +35,8 @@ For support and/or any questions you may have, feel free to join [my discord](ht
 
 | Minecraft Version | Status       |
 |-------------------|--------------|
-| 1.21.4            | ✅ Current    |
+| 1.21.5            | ✅ Current    |
+| 1.21.4            | ✔️ Available |
 | 1.21.2+3          | ✔️ Available |
 | 1.21+1            | ✅ Current    |
 | 1.20.5+6          | ✔️ Available |
@@ -48,7 +49,7 @@ Unsupported versions are still available to download, but they won't receive new
 
 ## Usage
 
-Mod builds can be found [here](https://github.com/eclipseisoffline/capecommand/packages/2064482) and on [Modrinth](https://modrinth.com/mod/cape-command).
+Mod builds can be found on the releases page, as well as on [Modrinth](https://modrinth.com/mod/cape-command).
 
 This mod requires the Fabric API.
 
