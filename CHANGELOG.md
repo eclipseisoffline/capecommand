@@ -1,1 +1,3 @@
 - Update to 1.21.5.
+- Added the `menace`, `home` and `yearn` capes.
+- Fixed a bug that caused XP level/health/food desyncs when changing cape.
