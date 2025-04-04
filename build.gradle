@@ -89,7 +89,7 @@ publishing {
 }
 
 publish {
-    dependsOn(publishMods)
+    dependsOn("publishMods")
 }
 
 publishMods {
@@ -101,13 +101,13 @@ publishMods {
 
     modrinth {
         accessToken = providers.gradleProperty("MODRINTH_API_TOKEN")
-        projectId = "NtPNF0D7"
+        projectId = "Ck0I4Uep"
         minecraftVersions.addAll(release_minecraft_versions.split(","))
     }
 
     github {
         accessToken = providers.gradleProperty("GITHUB_API_PUBLISH_TOKEN")
-        repository = "eclipseisoffline/jukeboxcustomdiscfix"
-        commitish = "main"
+        repository = "eclipseisoffline/capecommand"
+        commitish = "1.21.1"
     }
 }
