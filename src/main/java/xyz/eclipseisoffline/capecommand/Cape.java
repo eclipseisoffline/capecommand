@@ -70,7 +70,10 @@ public enum Cape {
     NO_CIRCLE_CAEP("https://minecraft.wiki/images/No_circle_Cape.png", true),
     NYAN_CAEP("https://minecraft.wiki/images/Nyan_Cape.png", true),
     SQUID_CAEP("https://minecraft.wiki/images/Squid_Cape.png", true),
-    VETERINARIAN_CAEP("https://minecraft.wiki/images/Veterinarian_Cape.png", true);
+    VETERINARIAN_CAEP("https://minecraft.wiki/images/Veterinarian_Cape.png", true),
+    MENACE("http://textures.minecraft.net/texture/dbc21e222528e30dc88445314f7be6ff12d3aeebc3c192054fba7e3b3f8c77b1"),
+    HOME("http://textures.minecraft.net/texture/1de21419009db483900da6298a1e6cbf9f1bc1523a0dcdc16263fab150693edd"),
+    YEARN("http://textures.minecraft.net/texture/308b32a9e303155a0b4262f9e5483ad4a22e3412e84fe8385a0bdd73dc41fa89");
 
     private final String capeURL;
     private final boolean requiresClient;
