@@ -9,6 +9,7 @@
     "ServerChunkLoadingManagerAccessor",
     "ServerConfigurationNetworkHandlerAccessor",
     "ServerPlayNetworkHandlerMixin",
+    "ServerPlayerEntityAccessor",
     "TextureUrlCheckerMixin"
   ],
   "client": [

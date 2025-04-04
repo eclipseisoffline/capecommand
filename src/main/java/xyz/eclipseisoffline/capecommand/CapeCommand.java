@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.networking.v1.S2CConfigurationChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
@@ -28,12 +27,12 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.eclipseisoffline.capecommand.mixin.EntityAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ServerChunkLoadingManagerAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ServerConfigurationNetworkHandlerAccessor;
+import xyz.eclipseisoffline.capecommand.mixin.ServerPlayerEntityAccessor;
 
 import java.util.List;
 
@@ -68,13 +67,19 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
 
                                             ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
                                             if (cape.requiresClient() && !CONFIG.hasCapeCommand(player)) {
-                                                throw new SimpleCommandExceptionType(Text.of("This cape requires you to install the Cape Command mod locally.")).create();
+                                                throw new SimpleCommandExceptionType(Text.of("This cape requires you to install the Cape Command mod locally")).create();
                                             }
 
                                             CONFIG.setPlayerCape(context.getSource().getPlayerOrThrow().getGameProfile(), cape);
 
                                             reloadPlayerSkin(context.getSource());
-                                            context.getSource().sendFeedback(() -> Text.of("Cape saved. Note that this cape is only visible to you and other players that have Cape Command installed."), true);
+                                            context.getSource().sendFeedback(() -> Text.of("Now wearing cape \"" + capeString.toLowerCase() + "\""), true);
+
+                                            if (CONFIG.isGeyserAvailable()) {
+                                                context.getSource().sendFeedback(() -> Text.of("Note that this cape is only visible to you, bedrock players, and other Java players that have Cape Command installed"), false);
+                                            } else {
+                                                context.getSource().sendFeedback(() -> Text.of("Note that this cape is only visible to you and other players that have Cape Command installed"), false);
+                                            }
 
                                             return 0;
                                         }))
@@ -158,6 +163,9 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
                 // Client clears these when respawning
                 source.getServer().getPlayerManager().sendPlayerStatus(player);
                 source.getServer().getPlayerManager().sendStatusEffects(player);
+                ((ServerPlayerEntityAccessor) player).setSyncedExperience(-1);
+                ((ServerPlayerEntityAccessor) player).setSyncedHealth(-1.0F);
+                ((ServerPlayerEntityAccessor) player).setSyncedFoodLevel(-1);
 
                 continue;
             }

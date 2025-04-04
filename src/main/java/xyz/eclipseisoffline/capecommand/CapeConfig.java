@@ -62,6 +62,10 @@ public class CapeConfig {
         capeCommandPlayers.remove(serverPlayerEntity.getGameProfile());
     }
 
+    public boolean isGeyserAvailable() {
+        return geyserAvailable;
+    }
+
     private void writeToConfig() {
         JsonObject capesJson = new JsonObject();
         for (Entry<UUID, Cape> playerCape : playerCapes.entrySet()) {
