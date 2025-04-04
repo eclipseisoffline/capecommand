@@ -7,7 +7,8 @@
 [![Github Badge](https://img.shields.io/badge/github-capecommand-white?logo=github)](https://github.com/eclipseisoffline/capecommand)
 ![GitHub License](https://img.shields.io/github/license/eclipseisoffline/capecommand)
 
-This mod adds a `/cape` command to Minecraft, which allows you to use any cape you want.
+This mod adds a `/cape` command to Minecraft, which allows you to use any cape you want. Use `/cape reset` to reset your cape
+to its default on your skin.
 
 All the capes listed [here](https://minecraft.wiki/w/Cape) are available, with custom capes being
 a planned feature.
