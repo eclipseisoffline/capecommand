@@ -8,7 +8,7 @@
     "PlayerListS2CPacketMixin",
     "ServerChunkLoadingManagerAccessor",
     "ServerConfigurationNetworkHandlerAccessor",
-    "ServerPlayNetworkHandlerMixin",
+    "ServerCommonNetworkHandlerMixin",
     "ServerPlayerEntityAccessor",
     "TextureUrlCheckerMixin"
   ],
