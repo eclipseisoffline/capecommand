@@ -11,6 +11,7 @@ import java.util.Base64;
 import java.util.List;
 
 import io.netty.channel.ChannelFutureListener;
+import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.listener.ServerCommonPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
@@ -29,8 +30,8 @@ import xyz.eclipseisoffline.capecommand.network.PlayerListS2CPacketEntriesUpdate
 @Mixin(ServerCommonNetworkHandler.class)
 public abstract class ServerCommonNetworkHandlerMixin implements ServerCommonPacketListener {
 
-    @WrapOperation(method = "sendPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lio/netty/channel/ChannelFutureListener;)V"))
-    public void modifyPlayerListPacket(ServerCommonNetworkHandler instance, Packet<?> packet, @Nullable ChannelFutureListener channelFutureListener, Operation<Void> original) {
+    @WrapOperation(method = "sendPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V"))
+    public void modifyPlayerListPacket(ServerCommonNetworkHandler instance, Packet<?> packet, PacketCallbacks callbacks, Operation<Void> original) {
         if (instance instanceof ServerPlayNetworkHandler playNetworkHandler
                 && packet instanceof PlayerListS2CPacket playerListS2CPacket) {
             ServerPlayerEntity player = playNetworkHandler.player;
@@ -53,7 +54,7 @@ public abstract class ServerCommonNetworkHandlerMixin implements ServerCommonPac
                 ((PlayerListS2CPacketEntriesUpdater) playerListS2CPacket).capeCommand$setEntries(entries);
             }
         }
-        original.call(instance, packet, channelFutureListener);
+        original.call(instance, packet, callbacks);
     }
 
     @Unique
