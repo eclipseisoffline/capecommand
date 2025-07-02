@@ -1,2 +1,1 @@
-- Update to 1.21.6.
-- Improve compatibility with other mods.
+- Update to 1.21.7.
