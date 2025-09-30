@@ -1,5 +1,7 @@
 package xyz.eclipseisoffline.capecommand.mixin;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import com.mojang.authlib.properties.PropertyMap;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.network.listener.ServerCommonPacketListener;
 import net.minecraft.network.packet.Packet;
@@ -23,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import xyz.eclipseisoffline.capecommand.Cape;
 import xyz.eclipseisoffline.capecommand.CapeCommand;
 import xyz.eclipseisoffline.capecommand.network.PlayerListS2CPacketEntriesUpdater;
 
@@ -38,18 +42,15 @@ public abstract class ServerCommonNetworkHandlerMixin implements ServerCommonPac
                 List<Entry> entries = new ArrayList<>();
                 for (Entry entry : playerListS2CPacket.getEntries()) {
                     GameProfile profile = entry.profile();
-                    if (profile != null
-                            && (CapeCommand.CONFIG.hasCapeCommand(player) || entry.profileId().equals(player.getUuid()))
-                            && CapeCommand.CONFIG.getPlayerCape(profile) != null) {
-                        GameProfile newProfile = new GameProfile(profile.getId(), profile.getName());
-
-                        newProfile.getProperties().putAll(entry.profile().getProperties());
-                        setCustomCapeInGameProfile(newProfile);
-                        profile = newProfile;
+                    if (profile != null) {
+                        Cape cape = CapeCommand.CONFIG.getPlayerCape(profile);
+                        if (cape != null && (CapeCommand.CONFIG.hasCapeCommand(player) || entry.profileId().equals(player.getUuid()))) {
+                            profile = new GameProfile(profile.id(), profile.name(), setCustomCapeInGameProfile(profile.properties(), cape));
+                        }
+                        entries.add(new Entry(entry.profileId(), profile, entry.listed(),
+                                entry.latency(), entry.gameMode(), entry.displayName(), entry.showHat(),
+                                entry.listOrder(), entry.chatSession()));
                     }
-                    entries.add(new Entry(entry.profileId(), profile, entry.listed(),
-                            entry.latency(), entry.gameMode(), entry.displayName(), entry.showHat(),
-                            entry.listOrder(), entry.chatSession()));
                 }
                 ((PlayerListS2CPacketEntriesUpdater) playerListS2CPacket).capeCommand$setEntries(entries);
             }
@@ -58,8 +59,8 @@ public abstract class ServerCommonNetworkHandlerMixin implements ServerCommonPac
     }
 
     @Unique
-    private void setCustomCapeInGameProfile(GameProfile gameProfile) {
-        Property texturesProperty = gameProfile.getProperties().get("textures").stream().findAny()
+    private static PropertyMap setCustomCapeInGameProfile(PropertyMap properties, Cape cape) {
+        Property texturesProperty = properties.get("textures").stream().findAny()
                 .orElse(null);
         JsonObject textures;
         if (texturesProperty != null) {
@@ -79,14 +80,17 @@ public abstract class ServerCommonNetworkHandlerMixin implements ServerCommonPac
             textures.getAsJsonObject("textures").add("CAPE", capeObject);
         }
         capeObject.remove("url");
-        capeObject.addProperty("url", CapeCommand.CONFIG.getPlayerCape(gameProfile).getCapeURL());
+        capeObject.addProperty("url", cape.getCapeURL());
 
         textures.remove("signatureRequired");
 
         String newTextures = Base64.getEncoder().encodeToString(textures.toString().getBytes());
         Property newTexturesProperty = new Property("textures", newTextures);
 
-        gameProfile.getProperties().removeAll("textures");
-        gameProfile.getProperties().put("textures", newTexturesProperty);
+        Multimap<String, Property> newProperties = MultimapBuilder.hashKeys().arrayListValues().build();
+        newProperties.putAll(properties);
+        newProperties.removeAll("textures");
+        newProperties.put("textures", newTexturesProperty);
+        return new PropertyMap(newProperties);
     }
 }

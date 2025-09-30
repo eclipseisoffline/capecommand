@@ -97,7 +97,7 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
         S2CConfigurationChannelEvents.REGISTER.register((handler, sender, server, channels) -> {
             if (ServerConfigurationNetworking.canSend(handler, INSTALLED_ID)) {
                 GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) handler).getProfile();
-                LOGGER.info("Player {} has cape commands installed client side", profile.getName());
+                LOGGER.info("Player {} has cape commands installed client side", profile.name());
                 CONFIG.registerCapeCommandPlayer(profile);
             }
         });

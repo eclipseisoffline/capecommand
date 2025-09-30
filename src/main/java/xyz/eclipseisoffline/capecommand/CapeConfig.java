@@ -37,16 +37,16 @@ public class CapeConfig {
     }
 
     public Cape getPlayerCape(GameProfile gameProfile) {
-        return playerCapes.get(gameProfile.getId());
+        return playerCapes.get(gameProfile.id());
     }
 
     public void setPlayerCape(GameProfile gameProfile, Cape cape) {
-        playerCapes.put(gameProfile.getId(), cape);
+        playerCapes.put(gameProfile.id(), cape);
         writeToConfig();
     }
 
     public void resetPlayerCape(GameProfile gameProfile) {
-        playerCapes.remove(gameProfile.getId());
+        playerCapes.remove(gameProfile.id());
         writeToConfig();
     }
 
@@ -91,8 +91,7 @@ public class CapeConfig {
                         playerCapes.put(UUID.fromString(playerCape.getKey()),
                                 Cape.valueOf(playerCape.getValue().getAsString()));
                     } catch (IllegalArgumentException exception) {
-                        CapeCommand.LOGGER.warn("Read invalid cape for UUID " + playerCape.getKey()
-                                + "! (" + playerCape.getValue().getAsString() + ")");
+                        CapeCommand.LOGGER.warn("Read invalid cape for UUID {}! ({})", playerCape.getKey(), playerCape.getValue().getAsString());
                     }
                 }
             } catch (IOException exception) {

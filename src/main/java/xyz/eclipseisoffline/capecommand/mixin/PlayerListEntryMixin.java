@@ -1,16 +1,15 @@
 package xyz.eclipseisoffline.capecommand.mixin;
 
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.util.SkinTextures;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(PlayerListEntry.class)
 public class PlayerListEntryMixin {
 
-    @Redirect(method = "method_52806", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/SkinTextures;secure()Z"))
-    private static boolean skinIsAlwaysSigned(SkinTextures instance) {
+    @ModifyArg(method = "texturesSupplier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/texture/PlayerSkinProvider;supplySkinTextures(Lcom/mojang/authlib/GameProfile;Z)Ljava/util/function/Supplier;"))
+    private static boolean skinIsAlwaysSigned(boolean requireSecure) {
         return true;
     }
 }
