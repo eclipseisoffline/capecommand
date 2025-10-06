@@ -1,1 +1,2 @@
-- Update to 1.21.9.
+- Fix all skins appearing as defaults when the mod is installed client-side.
+- Mark 1.21.10 as supported.

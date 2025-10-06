@@ -10,8 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class TextureUrlCheckerMixin {
 
     @Inject(method = "isAllowedTextureDomain", at = @At("TAIL"), cancellable = true)
-    private static void noDomainWhitelist(String url,
-            CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
+    private static void noDomainWhitelist(String url, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
         callbackInfoReturnable.setReturnValue(true);
     }
 }
