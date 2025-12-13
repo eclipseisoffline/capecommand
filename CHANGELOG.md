@@ -1,1 +1,2 @@
+- Added copper cape (@TheRealAjay).
 - Mark 1.21.11 as supported.
