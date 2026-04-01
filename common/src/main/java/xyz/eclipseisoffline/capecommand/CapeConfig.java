@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import net.minecraft.server.level.ServerPlayer;
+import org.geysermc.api.Geyser;
 
 public class CapeConfig {
     private static final Path CONFIG_FILE = Path.of("playercapes.json");
@@ -26,7 +27,7 @@ public class CapeConfig {
     private CapeConfig(Path configFile) {
         boolean geyserAvailable;
         try {
-            Class.forName("org.geysermc.geyser.api.GeyserApi");
+            Class.forName("org.geysermc.api.Geyser");
             geyserAvailable = true;
             CapeCommand.LOGGER.info("Geyser compatibility enabled!");
         } catch (NoClassDefFoundError | ClassNotFoundException error) {
@@ -55,7 +56,7 @@ public class CapeConfig {
     }
 
     public boolean hasCapeCommand(ServerPlayer player) {
-        return capeCommandPlayers.contains(player.getGameProfile()) || (geyserAvailable && GeyserApi.api().isBedrockPlayer(player.getUuid()));
+        return capeCommandPlayers.contains(player.getGameProfile()) || (geyserAvailable && Geyser.api().isBedrockPlayer(player.getUUID()));
     }
 
     public void unregisterCapeCommandPlayer(ServerPlayer player) {

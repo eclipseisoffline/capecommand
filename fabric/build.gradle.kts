@@ -2,4 +2,12 @@ plugins {
     alias(libs.plugins.multimod)
 }
 
-multimod.fabric(project(":common"))
+dependencies {
+    compileOnly(libs.geyser.base.api)
+}
+
+multimod.fabric(project(":common")) {
+    loom {
+        accessWidenerPath = file("../common/src/main/resources/capecommand.accesswidener")
+    }
+}

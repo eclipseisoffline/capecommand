@@ -14,6 +14,15 @@ multimod {
 
     archivesBaseName = properties["archives_base_name"] as String
 
+    settings {
+        repositories {
+            maven {
+                name = "open-collab"
+                url = uri("https://repo.opencollab.dev/main")
+            }
+        }
+    }
+
     minecraft {
         minecraft = libs.minecraft
         supported(libs.versions.minecraft.release)
