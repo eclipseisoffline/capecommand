@@ -9,7 +9,7 @@
     "ChunkMapAccessor",
     "ServerConfigurationPacketListenerImplAccessor",
     "ServerCommonPacketListenerImplMixin",
-    "ServerPlayerEntityAccessor",
+    "ServerPlayerAccessor",
     "TextureUrlCheckerMixin"
   ],
   "client": [

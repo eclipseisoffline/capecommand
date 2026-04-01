@@ -11,6 +11,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
@@ -19,13 +20,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
-import net.minecraft.world.entity.Entity.RemovalReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import xyz.eclipseisoffline.capecommand.mixin.EntityAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ChunkMapAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ServerConfigurationPacketListenerImplAccessor;
-import xyz.eclipseisoffline.capecommand.mixin.ServerPlayerEntityAccessor;
+import xyz.eclipseisoffline.capecommand.mixin.ServerPlayerAccessor;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -148,24 +147,18 @@ public abstract class CapeCommand {
                 trackedPlayer.removePlayer(other);
                 trackedPlayer.updatePlayer(other);
             } else {
-                // "Respawn" the player to reload the skin on their client TODO CHECK THIS
-
-                // Close any menus open
-                /*player.inventoryMenu.removed(player);
-                if (player.hasContainerOpen()) {
-                    player.doCloseContainer();
-                }*/
+                // "Respawn" the player to reload the skin on their client
 
                 // Respawn player, which will show a "Loading terrain" screen
                 player.connection.send(new ClientboundRespawnPacket(player.createCommonSpawnInfo(source.getLevel()), ClientboundRespawnPacket.KEEP_ALL_DATA));
+                player.connection.send(new ClientboundChangeDifficultyPacket(source.getLevel().getDifficulty(), source.getLevel().getLevelData().isDifficultyLocked()));
+
+                source.getServer().getPlayerList().sendPlayerPermissionLevel(player);
 
                 // This is necessary to close the "Loading terrain" screen and go back to the world
                 player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
                 player.connection.resetPosition();
 
-                source.getLevel().removePlayerImmediately(player, RemovalReason.CHANGED_DIMENSION);
-                ((EntityAccessor) player).invokeUnsetRemoved();
-                source.getLevel().addDuringTeleport(player);
                 player.stopUsingItem();
 
                 player.connection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
@@ -174,9 +167,9 @@ public abstract class CapeCommand {
                 // Client clears these when respawning
                 source.getServer().getPlayerList().sendAllPlayerInfo(player);
                 source.getServer().getPlayerList().sendActivePlayerEffects(player);
-                ((ServerPlayerEntityAccessor) player).setLastSentExp(-1);
-                ((ServerPlayerEntityAccessor) player).setLastSentHealth(-1.0F);
-                //((ServerPlayerEntityAccessor) player).setSyncedFoodLevel(-1);
+                ((ServerPlayerAccessor) player).setLastSentExp(-1);
+                ((ServerPlayerAccessor) player).setLastSentHealth(-1.0F);
+                ((ServerPlayerAccessor) player).setLastSentFood(-1);
             }
         }
     }
