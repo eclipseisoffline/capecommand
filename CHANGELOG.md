@@ -1,2 +1,2 @@
-- Added copper cape (@TheRealAjay).
-- Mark 1.21.11 as supported.
+- Update to Minecraft 26.1.1.
+- Port to NeoForge
