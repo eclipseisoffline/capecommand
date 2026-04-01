@@ -20,6 +20,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.eclipseisoffline.capecommand.mixin.ChunkMapAccessor;
@@ -34,7 +35,7 @@ public abstract class CapeCommand {
     public static final String MOD_ID = "capecommand";
     public static final CustomPacketPayload.Type<CustomPacketPayload> INSTALLED_PAYLOAD = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MOD_ID, "installed"));
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private static CapeConfig config;
+    private static @Nullable CapeConfig config;
 
     protected CapeCommand() {}
 
