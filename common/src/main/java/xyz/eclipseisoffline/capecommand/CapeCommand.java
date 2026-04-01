@@ -1,99 +1,86 @@
 package xyz.eclipseisoffline.capecommand;
 
-import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.S2CConfigurationChannelEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.CustomPayload.Id;
-import net.minecraft.network.packet.s2c.play.PlayerAbilitiesS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerRemoveS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerChunkLoadingManager;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity.RemovalReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.eclipseisoffline.capecommand.mixin.EntityAccessor;
-import xyz.eclipseisoffline.capecommand.mixin.ServerChunkLoadingManagerAccessor;
-import xyz.eclipseisoffline.capecommand.mixin.ServerConfigurationNetworkHandlerAccessor;
+import xyz.eclipseisoffline.capecommand.mixin.ChunkMapAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ServerPlayerEntityAccessor;
 
 import java.util.List;
+import java.util.function.Consumer;
 
-public class CapeCommand implements ModInitializer, ClientModInitializer {
-    public static final Id<CustomPayload> INSTALLED_ID = new Id<>(
-            Identifier.of("capecommand", "installed"));
+public abstract class CapeCommand {
+    public static final CustomPacketPayload.Type<CustomPacketPayload> INSTALLED_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("capecommand", "installed"));
     public static final Logger LOGGER = LoggerFactory.getLogger("CapeCommand");
     public static final CapeConfig CONFIG = new CapeConfig();
 
-    @Override
-    public void onInitialize() {
+    public void initialize() {
         LOGGER.info("Initialising cape command");
         LOGGER.info("Trying to load config, if it exists");
         CONFIG.readFromConfig();
 
         LOGGER.info("Registering cape command");
-        CommandRegistrationCallback.EVENT.register(
-                ((dispatcher, registry, environment) -> dispatcher.register(
-                        CommandManager.literal("cape")
-                                .requires(ServerCommandSource::isExecutedByPlayer)
-                                .then(CommandManager.argument("name", StringArgumentType.word())
-                                        .suggests(new CapeCommandSuggestionProvider())
-                                        .executes(context -> {
-                                            String capeString = StringArgumentType.getString(
-                                                    context, "name");
-                                            Cape cape;
-                                            try {
-                                                cape = Cape.valueOf(capeString.toUpperCase());
-                                            } catch (IllegalArgumentException exception) {
-                                                throw new SimpleCommandExceptionType(Text.of("Unknown cape")).create();
-                                            }
+        registerCommands(dispatcher -> dispatcher.register(
+                Commands.literal("cape")
+                        .requires(CommandSourceStack::isPlayer)
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .suggests(new CapeCommandSuggestionProvider())
+                                .executes(context -> {
+                                    String capeString = StringArgumentType.getString(context, "name");
+                                    Cape cape;
+                                    try {
+                                        cape = Cape.valueOf(capeString.toUpperCase());
+                                    } catch (IllegalArgumentException exception) {
+                                        throw new SimpleCommandExceptionType(Component.literal("Unknown cape")).create();
+                                    }
 
-                                            ServerPlayerEntity player = context.getSource().getPlayerOrThrow();
-                                            if (cape.requiresClient() && !CONFIG.hasCapeCommand(player)) {
-                                                throw new SimpleCommandExceptionType(Text.of("This cape requires you to install the Cape Command mod locally")).create();
-                                            }
+                                    ServerPlayer player = context.getSource().getPlayerOrException();
+                                    if (cape.requiresClient() && !CONFIG.hasCapeCommand(player)) {
+                                        throw new SimpleCommandExceptionType(Component.literal("This cape requires you to install the Cape Command mod locally")).create();
+                                    }
 
-                                            CONFIG.setPlayerCape(context.getSource().getPlayerOrThrow().getGameProfile(), cape);
+                                    CONFIG.setPlayerCape(context.getSource().getPlayerOrException().getGameProfile(), cape);
 
-                                            reloadPlayerSkin(context.getSource());
-                                            context.getSource().sendFeedback(() -> Text.of("Now wearing cape \"" + capeString.toLowerCase() + "\""), true);
+                                    reloadPlayerSkin(context.getSource());
+                                    context.getSource().sendSuccess(() -> Component.literal("Now wearing cape \"" + capeString.toLowerCase() + "\""), true);
 
-                                            if (CONFIG.isGeyserAvailable()) {
-                                                context.getSource().sendFeedback(() -> Text.of("Note that this cape is only visible to you, bedrock players, and other Java players that have Cape Command installed"), false);
-                                            } else {
-                                                context.getSource().sendFeedback(() -> Text.of("Note that this cape is only visible to you and other players that have Cape Command installed"), false);
-                                            }
+                                    if (CONFIG.isGeyserAvailable()) {
+                                        context.getSource().sendSuccess(() -> Component.literal("Note that this cape is only visible to you, bedrock players, and other Java players that have Cape Command installed"), false);
+                                    } else {
+                                        context.getSource().sendSuccess(() -> Component.literal("Note that this cape is only visible to you and other players that have Cape Command installed"), false);
+                                    }
 
-                                            return 0;
-                                        }))
-                                .then(CommandManager.literal("reset")
-                                        .executes(context -> {
-                                            CONFIG.resetPlayerCape(context.getSource()
-                                                    .getPlayerOrThrow().getGameProfile());
-                                            reloadPlayerSkin(context.getSource());
-                                            context.getSource().sendFeedback(() -> Text.of(
-                                                    "Cape reset"), true);
-                                            return 0;
-                                        })))));
+                                    return 0;
+                                })
+                        )
+                        .then(Commands.literal("reset")
+                                .executes(context -> {
+                                    CONFIG.resetPlayerCape(context.getSource().getPlayerOrException().getGameProfile());
+                                    reloadPlayerSkin(context.getSource());
+                                    context.getSource().sendSuccess(() -> Component.literal("Cape reset"), true);
+                                    return 0;
+                                })
+                        )
+                )
+        );
 
-        LOGGER.info("Registering server network handlers");
+        /*LOGGER.info("Registering server network handlers");
         S2CConfigurationChannelEvents.REGISTER.register((handler, sender, server, channels) -> {
             if (ServerConfigurationNetworking.canSend(handler, INSTALLED_ID)) {
                 GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) handler).getProfile();
@@ -102,10 +89,10 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
             }
         });
         ServerPlayConnectionEvents.DISCONNECT.register(
-                ((handler, server) -> CONFIG.unregisterCapeCommandPlayer(handler.getPlayer())));
+                ((handler, server) -> CONFIG.unregisterCapeCommandPlayer(handler.getPlayer())));*/
     }
 
-    @Override
+    /*@Override
     public void onInitializeClient() {
         LOGGER.info("Registering client network handlers");
         PayloadTypeRegistry.configurationS2C().register(INSTALLED_ID,
@@ -121,55 +108,53 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
                     }
                 });
         ClientConfigurationNetworking.registerGlobalReceiver(INSTALLED_ID, (payload, context) -> {});
-    }
+    }*/
 
-    private void reloadPlayerSkin(ServerCommandSource source) throws CommandSyntaxException {
-        ServerChunkLoadingManager chunkManager = source.getWorld().getChunkManager().chunkLoadingManager;
-        ServerPlayerEntity player = source.getPlayerOrThrow();
-        ServerChunkLoadingManager.EntityTracker trackedPlayer = ((ServerChunkLoadingManagerAccessor) chunkManager).getEntityTrackers().get(player.getId());
+    protected abstract void registerCommands(Consumer<CommandDispatcher<CommandSourceStack>> registerer);
 
-        for (ServerPlayerEntity other : source.getServer().getPlayerManager().getPlayerList()) {
-            boolean same = other == player;
-            if (!same) {
-                trackedPlayer.stopTracking(other);
-            }
+    private void reloadPlayerSkin(CommandSourceStack source) throws CommandSyntaxException {
+        ChunkMap chunkMap = source.getLevel().getChunkSource().chunkMap;
+        ServerPlayer player = source.getPlayerOrException();
+        ChunkMap.TrackedEntity trackedPlayer = ((ChunkMapAccessor) chunkMap).getEntityMap().get(player.getId());
 
-            other.networkHandler.sendPacket(new PlayerRemoveS2CPacket(List.of(player.getUuid())));
-            other.networkHandler.sendPacket(PlayerListS2CPacket.entryFromPlayer(List.of(player)));
-            if (same) {
-                // "Respawn" the player to reload the skin on their client
+        for (ServerPlayer other : source.getServer().getPlayerList().getPlayers()) {
+            other.connection.send(new ClientboundPlayerInfoRemovePacket(List.of(player.getUUID())));
+            other.connection.send(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(player)));
+
+            if (other != player) {
+                trackedPlayer.removePlayer(other);
+                trackedPlayer.updatePlayer(other);
+            } else {
+                // "Respawn" the player to reload the skin on their client TODO CHECK THIS
 
                 // Close any menus open
-                player.playerScreenHandler.onClosed(player);
-                if (player.currentScreenHandler != null && player.shouldCloseHandledScreenOnRespawn()) {
-                    player.onHandledScreenClosed();
-                }
+                /*player.inventoryMenu.removed(player);
+                if (player.hasContainerOpen()) {
+                    player.doCloseContainer();
+                }*/
 
                 // Respawn player, which will show a "Loading terrain" screen
-                player.networkHandler.sendPacket(new PlayerRespawnS2CPacket(other.createCommonPlayerSpawnInfo(source.getWorld()), PlayerRespawnS2CPacket.KEEP_ALL));
+                player.connection.send(new ClientboundRespawnPacket(player.createCommonSpawnInfo(source.getLevel()), ClientboundRespawnPacket.KEEP_ALL_DATA));
 
                 // This is necessary to close the "Loading terrain" screen and go back to the world
-                player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch());
-                player.networkHandler.syncWithPlayerPosition();
+                player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
+                player.connection.resetPosition();
 
-                source.getWorld().removePlayer(player, Entity.RemovalReason.CHANGED_DIMENSION);
+                source.getLevel().removePlayerImmediately(player, RemovalReason.CHANGED_DIMENSION);
                 ((EntityAccessor) player).invokeUnsetRemoved();
-                source.getWorld().onDimensionChanged(player);
-                player.clearActiveItem();
+                source.getLevel().addDuringTeleport(player);
+                player.stopUsingItem();
 
-                player.networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(player.getAbilities()));
-                source.getServer().getPlayerManager().sendWorldInfo(player, source.getWorld());
+                player.connection.send(new ClientboundPlayerAbilitiesPacket(player.getAbilities()));
+                source.getServer().getPlayerList().sendLevelInfo(player, source.getLevel());
 
                 // Client clears these when respawning
-                source.getServer().getPlayerManager().sendPlayerStatus(player);
-                source.getServer().getPlayerManager().sendStatusEffects(player);
+                source.getServer().getPlayerList().sendAllPlayerInfo(player);
+                source.getServer().getPlayerList().sendActivePlayerEffects(player);
                 ((ServerPlayerEntityAccessor) player).setLastSentExp(-1);
                 ((ServerPlayerEntityAccessor) player).setLastSentHealth(-1.0F);
-                ((ServerPlayerEntityAccessor) player).setSyncedFoodLevel(-1);
-
-                continue;
+                //((ServerPlayerEntityAccessor) player).setSyncedFoodLevel(-1);
             }
-            trackedPlayer.updateTrackedStatus(other);
         }
     }
 }

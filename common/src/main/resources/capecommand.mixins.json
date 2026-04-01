@@ -6,7 +6,7 @@
   "mixins": [
     "EntityAccessor",
     "ClientboundPlayerInfoUpdatePacketMixin",
-    "ServerChunkLoadingManagerAccessor",
+    "ChunkMapAccessor",
     "ServerConfigurationNetworkHandlerAccessor",
     "ServerCommonPacketListenerImplMixin",
     "ServerPlayerEntityAccessor",
