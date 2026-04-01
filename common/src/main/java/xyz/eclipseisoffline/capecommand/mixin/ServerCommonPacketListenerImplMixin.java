@@ -14,52 +14,49 @@ import java.util.List;
 
 import com.mojang.authlib.properties.PropertyMap;
 import io.netty.channel.ChannelFutureListener;
-import net.minecraft.network.listener.ServerCommonPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket.Action;
-import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket.Entry;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ServerCommonPacketListener;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerCommonPacketListenerImpl;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import xyz.eclipseisoffline.capecommand.Cape;
 import xyz.eclipseisoffline.capecommand.CapeCommand;
-import xyz.eclipseisoffline.capecommand.network.PlayerListS2CPacketEntriesUpdater;
+import xyz.eclipseisoffline.capecommand.network.ClientboundPlayerInfoUpdatePacketEntriesUpdater;
 
-@Mixin(ServerCommonNetworkHandler.class)
-public abstract class ServerCommonNetworkHandlerMixin implements ServerCommonPacketListener {
+@Mixin(ServerCommonPacketListenerImpl.class)
+public abstract class ServerCommonPacketListenerImplMixin implements ServerCommonPacketListener {
 
-    @WrapOperation(method = "sendPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lio/netty/channel/ChannelFutureListener;)V"))
-    public void modifyPlayerListPacket(ServerCommonNetworkHandler instance, Packet<?> packet, @Nullable ChannelFutureListener channelFutureListener, Operation<Void> original) {
-        if (instance instanceof ServerPlayNetworkHandler playNetworkHandler
-                && packet instanceof PlayerListS2CPacket playerListS2CPacket) {
-            ServerPlayerEntity player = playNetworkHandler.player;
-            if (playerListS2CPacket.getActions().contains(Action.ADD_PLAYER)) {
-                List<Entry> entries = new ArrayList<>();
-                for (Entry entry : playerListS2CPacket.getEntries()) {
+    @WrapOperation(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerCommonPacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V"))
+    public void modifyPlayerListPacket(ServerCommonPacketListenerImpl instance, Packet<?> packet, @Nullable ChannelFutureListener futureListener, Operation<Void> original) {
+        if (instance instanceof ServerGamePacketListenerImpl gamePacketListener && packet instanceof ClientboundPlayerInfoUpdatePacket playerInfoUpdatePacket) {
+            ServerPlayer player = gamePacketListener.player;
+            if (playerInfoUpdatePacket.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER)) {
+                List<ClientboundPlayerInfoUpdatePacket.Entry> entries = new ArrayList<>();
+                for (ClientboundPlayerInfoUpdatePacket.Entry entry : playerInfoUpdatePacket.entries()) {
                     GameProfile profile = entry.profile();
                     if (profile != null) {
                         Cape cape = CapeCommand.CONFIG.getPlayerCape(profile);
-                        if (cape != null && (CapeCommand.CONFIG.hasCapeCommand(player) || entry.profileId().equals(player.getUuid()))) {
-                            profile = new GameProfile(profile.id(), profile.name(), setCustomCapeInGameProfile(profile.properties(), cape));
+                        if (cape != null && (CapeCommand.CONFIG.hasCapeCommand(player) || entry.profileId().equals(player.getUUID()))) {
+                            profile = new GameProfile(profile.id(), profile.name(), capeCommand$setCustomCapeInGameProfile(profile.properties(), cape));
                         }
-                        entries.add(new Entry(entry.profileId(), profile, entry.listed(),
+                        entries.add(new ClientboundPlayerInfoUpdatePacket.Entry(entry.profileId(), profile, entry.listed(),
                                 entry.latency(), entry.gameMode(), entry.displayName(), entry.showHat(),
                                 entry.listOrder(), entry.chatSession()));
                     }
                 }
-                ((PlayerListS2CPacketEntriesUpdater) playerListS2CPacket).capeCommand$setEntries(entries);
+                ((ClientboundPlayerInfoUpdatePacketEntriesUpdater) playerInfoUpdatePacket).capeCommand$setEntries(entries);
             }
         }
-        original.call(instance, packet, channelFutureListener);
+        original.call(instance, packet, futureListener);
     }
 
     @Unique
-    private static PropertyMap setCustomCapeInGameProfile(PropertyMap properties, Cape cape) {
+    private static PropertyMap capeCommand$setCustomCapeInGameProfile(PropertyMap properties, Cape cape) {
         Property texturesProperty = properties.get("textures").stream().findAny()
                 .orElse(null);
         JsonObject textures;

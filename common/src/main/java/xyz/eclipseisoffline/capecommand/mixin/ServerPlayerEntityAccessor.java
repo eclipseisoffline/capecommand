@@ -1,18 +1,18 @@
 package xyz.eclipseisoffline.capecommand.mixin;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(ServerPlayer.class)
 public interface ServerPlayerEntityAccessor {
 
-    @Accessor("syncedExperience")
-    void setSyncedExperience(int syncedExperience);
+    @Accessor("lastSentExp")
+    void setLastSentExp(int lastSentExp);
 
-    @Accessor("syncedHealth")
-    void setSyncedHealth(float syncedHealth);
+    @Accessor("lastSentHealth")
+    void setLastSentHealth(float lastSentHealth);
 
-    @Accessor("syncedFoodLevel")
-    void setSyncedFoodLevel(int syncedFoodLevel);
+    @Accessor("lastSentFood")
+    void setLastSentFood(int lastSentFood);
 }

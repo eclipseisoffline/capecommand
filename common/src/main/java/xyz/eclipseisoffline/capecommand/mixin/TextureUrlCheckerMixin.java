@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = TextureUrlChecker.class, remap = false)
+@Mixin(TextureUrlChecker.class)
 public class TextureUrlCheckerMixin {
 
     @Inject(method = "isAllowedTextureDomain", at = @At("TAIL"), cancellable = true)

@@ -163,8 +163,8 @@ public class CapeCommand implements ModInitializer, ClientModInitializer {
                 // Client clears these when respawning
                 source.getServer().getPlayerManager().sendPlayerStatus(player);
                 source.getServer().getPlayerManager().sendStatusEffects(player);
-                ((ServerPlayerEntityAccessor) player).setSyncedExperience(-1);
-                ((ServerPlayerEntityAccessor) player).setSyncedHealth(-1.0F);
+                ((ServerPlayerEntityAccessor) player).setLastSentExp(-1);
+                ((ServerPlayerEntityAccessor) player).setLastSentHealth(-1.0F);
                 ((ServerPlayerEntityAccessor) player).setSyncedFoodLevel(-1);
 
                 continue;

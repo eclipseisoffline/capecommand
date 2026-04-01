@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.geysermc.geyser.api.GeyserApi;
 
@@ -36,30 +37,30 @@ public class CapeConfig {
         this.geyserAvailable = geyserAvailable;
     }
 
-    public Cape getPlayerCape(GameProfile gameProfile) {
-        return playerCapes.get(gameProfile.id());
+    public Cape getPlayerCape(GameProfile profile) {
+        return playerCapes.get(profile.id());
     }
 
-    public void setPlayerCape(GameProfile gameProfile, Cape cape) {
-        playerCapes.put(gameProfile.id(), cape);
+    public void setPlayerCape(GameProfile profile, Cape cape) {
+        playerCapes.put(profile.id(), cape);
         writeToConfig();
     }
 
-    public void resetPlayerCape(GameProfile gameProfile) {
-        playerCapes.remove(gameProfile.id());
+    public void resetPlayerCape(GameProfile profile) {
+        playerCapes.remove(profile.id());
         writeToConfig();
     }
 
-    public void registerCapeCommandPlayer(GameProfile serverPlayerEntity) {
-        capeCommandPlayers.add(serverPlayerEntity);
+    public void registerCapeCommandPlayer(GameProfile profile) {
+        capeCommandPlayers.add(profile);
     }
 
-    public boolean hasCapeCommand(ServerPlayerEntity serverPlayerEntity) {
-        return capeCommandPlayers.contains(serverPlayerEntity.getGameProfile()) || (geyserAvailable && GeyserApi.api().isBedrockPlayer(serverPlayerEntity.getUuid()));
+    public boolean hasCapeCommand(ServerPlayer player) {
+        return capeCommandPlayers.contains(player.getGameProfile()) || (geyserAvailable && GeyserApi.api().isBedrockPlayer(player.getUuid()));
     }
 
-    public void unregisterCapeCommandPlayer(ServerPlayerEntity serverPlayerEntity) {
-        capeCommandPlayers.remove(serverPlayerEntity.getGameProfile());
+    public void unregisterCapeCommandPlayer(ServerPlayer player) {
+        capeCommandPlayers.remove(player.getGameProfile());
     }
 
     public boolean isGeyserAvailable() {
