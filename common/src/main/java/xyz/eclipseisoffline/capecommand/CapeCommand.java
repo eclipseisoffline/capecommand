@@ -22,18 +22,19 @@ import xyz.eclipseisoffline.capecommand.mixin.EntityAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ChunkMapAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ServerPlayerEntityAccessor;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
 public abstract class CapeCommand {
     public static final CustomPacketPayload.Type<CustomPacketPayload> INSTALLED_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("capecommand", "installed"));
     public static final Logger LOGGER = LoggerFactory.getLogger("CapeCommand");
-    public static final CapeConfig CONFIG = new CapeConfig();
+    private static CapeConfig config;
 
     public void initialize() {
         LOGGER.info("Initialising cape command");
         LOGGER.info("Trying to load config, if it exists");
-        CONFIG.readFromConfig();
+        config = CapeConfig.readFromConfig(getConfigDir());
 
         LOGGER.info("Registering cape command");
         registerCommands(dispatcher -> dispatcher.register(
@@ -51,16 +52,16 @@ public abstract class CapeCommand {
                                     }
 
                                     ServerPlayer player = context.getSource().getPlayerOrException();
-                                    if (cape.requiresClient() && !CONFIG.hasCapeCommand(player)) {
+                                    if (cape.requiresClient() && !config.hasCapeCommand(player)) {
                                         throw new SimpleCommandExceptionType(Component.literal("This cape requires you to install the Cape Command mod locally")).create();
                                     }
 
-                                    CONFIG.setPlayerCape(context.getSource().getPlayerOrException().getGameProfile(), cape);
+                                    config.setPlayerCape(context.getSource().getPlayerOrException().getGameProfile(), cape);
 
                                     reloadPlayerSkin(context.getSource());
                                     context.getSource().sendSuccess(() -> Component.literal("Now wearing cape \"" + capeString.toLowerCase() + "\""), true);
 
-                                    if (CONFIG.isGeyserAvailable()) {
+                                    if (config.isGeyserAvailable()) {
                                         context.getSource().sendSuccess(() -> Component.literal("Note that this cape is only visible to you, bedrock players, and other Java players that have Cape Command installed"), false);
                                     } else {
                                         context.getSource().sendSuccess(() -> Component.literal("Note that this cape is only visible to you and other players that have Cape Command installed"), false);
@@ -71,7 +72,7 @@ public abstract class CapeCommand {
                         )
                         .then(Commands.literal("reset")
                                 .executes(context -> {
-                                    CONFIG.resetPlayerCape(context.getSource().getPlayerOrException().getGameProfile());
+                                    config.resetPlayerCape(context.getSource().getPlayerOrException().getGameProfile());
                                     reloadPlayerSkin(context.getSource());
                                     context.getSource().sendSuccess(() -> Component.literal("Cape reset"), true);
                                     return 0;
@@ -111,6 +112,15 @@ public abstract class CapeCommand {
     }*/
 
     protected abstract void registerCommands(Consumer<CommandDispatcher<CommandSourceStack>> registerer);
+
+    protected abstract Path getConfigDir();
+
+    public static CapeConfig getConfig() {
+        if (config == null) {
+            throw new IllegalStateException("CapeConfig accessed before it was loaded");
+        }
+        return config;
+    }
 
     private void reloadPlayerSkin(CommandSourceStack source) throws CommandSyntaxException {
         ChunkMap chunkMap = source.getLevel().getChunkSource().chunkMap;

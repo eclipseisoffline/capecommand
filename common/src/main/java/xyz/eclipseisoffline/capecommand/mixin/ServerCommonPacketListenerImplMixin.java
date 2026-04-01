@@ -40,8 +40,8 @@ public abstract class ServerCommonPacketListenerImplMixin implements ServerCommo
                 for (ClientboundPlayerInfoUpdatePacket.Entry entry : playerInfoUpdatePacket.entries()) {
                     GameProfile profile = entry.profile();
                     if (profile != null) {
-                        Cape cape = CapeCommand.CONFIG.getPlayerCape(profile);
-                        if (cape != null && (CapeCommand.CONFIG.hasCapeCommand(player) || entry.profileId().equals(player.getUUID()))) {
+                        Cape cape = CapeCommand.getConfig().getPlayerCape(profile);
+                        if (cape != null && (CapeCommand.getConfig().hasCapeCommand(player) || entry.profileId().equals(player.getUUID()))) {
                             profile = new GameProfile(profile.id(), profile.name(), capeCommand$setCustomCapeInGameProfile(profile.properties(), cape));
                         }
                         entries.add(new ClientboundPlayerInfoUpdatePacket.Entry(entry.profileId(), profile, entry.listed(),

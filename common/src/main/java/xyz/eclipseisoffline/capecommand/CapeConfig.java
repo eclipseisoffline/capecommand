@@ -13,19 +13,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import org.geysermc.geyser.api.GeyserApi;
 
 public class CapeConfig {
-
     private static final Path CONFIG_FILE = Path.of("playercapes.json");
+
     private final Map<UUID, Cape> playerCapes = new HashMap<>();
     private final List<GameProfile> capeCommandPlayers = new ArrayList<>();
+    private final Path configFile;
     private final boolean geyserAvailable;
 
-    public CapeConfig() {
+    private CapeConfig(Path configFile) {
         boolean geyserAvailable;
         try {
             Class.forName("org.geysermc.geyser.api.GeyserApi");
@@ -34,6 +32,7 @@ public class CapeConfig {
         } catch (NoClassDefFoundError | ClassNotFoundException error) {
             geyserAvailable = false;
         }
+        this.configFile = configFile;
         this.geyserAvailable = geyserAvailable;
     }
 
@@ -73,24 +72,23 @@ public class CapeConfig {
             capesJson.addProperty(playerCape.getKey().toString(), playerCape.getValue().toString());
         }
 
-        Path capeConfigPath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
         try {
-            Files.writeString(capeConfigPath, capesJson.toString());
+            Files.writeString(configFile, capesJson.toString());
         } catch (IOException exception) {
             CapeCommand.LOGGER.warn("Failed to save player cape config!", exception);
         }
     }
 
-    public void readFromConfig() {
-        Path capeConfigPath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_FILE);
+    public static CapeConfig readFromConfig(Path configDir) {
+        Path capeConfigPath = configDir.resolve(CONFIG_FILE);
+        CapeConfig loaded = new CapeConfig(capeConfigPath);
+
         if (Files.exists(capeConfigPath)) {
             try {
-                JsonObject capesJson = JsonParser.parseString(Files.readString(capeConfigPath))
-                        .getAsJsonObject();
+                JsonObject capesJson = JsonParser.parseString(Files.readString(capeConfigPath)).getAsJsonObject();
                 for (Entry<String, JsonElement> playerCape : capesJson.entrySet()) {
                     try {
-                        playerCapes.put(UUID.fromString(playerCape.getKey()),
-                                Cape.valueOf(playerCape.getValue().getAsString()));
+                        loaded.playerCapes.put(UUID.fromString(playerCape.getKey()), Cape.valueOf(playerCape.getValue().getAsString()));
                     } catch (IllegalArgumentException exception) {
                         CapeCommand.LOGGER.warn("Read invalid cape for UUID {}! ({})", playerCape.getKey(), playerCape.getValue().getAsString());
                     }
@@ -99,5 +97,6 @@ public class CapeConfig {
                 CapeCommand.LOGGER.warn("Failed to read player cape config!", exception);
             }
         }
+        return loaded;
     }
 }

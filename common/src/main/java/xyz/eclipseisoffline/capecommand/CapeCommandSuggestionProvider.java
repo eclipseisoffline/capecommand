@@ -17,7 +17,7 @@ public class CapeCommandSuggestionProvider implements SuggestionProvider<Command
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
-        boolean hasClient = CapeCommand.CONFIG.hasCapeCommand(player);
+        boolean hasClient = CapeCommand.getConfig().hasCapeCommand(player);
 
         return SharedSuggestionProvider.suggest(Arrays.stream(Cape.values())
                 .filter(cape -> !cape.requiresClient() || hasClient)

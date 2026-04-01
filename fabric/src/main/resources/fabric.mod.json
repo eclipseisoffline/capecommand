@@ -22,10 +22,9 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "xyz.eclipseisoffline.capecommand.CapeCommand"
+      "xyz.eclipseisoffline.capecommand.fabric.CapeCommandFabric"
     ],
     "client": [
-      "xyz.eclipseisoffline.capecommand.CapeCommand"
     ]
   },
   "accessWidener": "capecommand.accesswidener",
