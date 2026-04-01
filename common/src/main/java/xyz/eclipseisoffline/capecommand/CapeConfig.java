@@ -59,8 +59,8 @@ public class CapeConfig {
         return capeCommandPlayers.contains(player.getGameProfile()) || (geyserAvailable && Geyser.api().isBedrockPlayer(player.getUUID()));
     }
 
-    public void unregisterCapeCommandPlayer(ServerPlayer player) {
-        capeCommandPlayers.remove(player.getGameProfile());
+    public void unregisterCapeCommandPlayer(GameProfile profile) {
+        capeCommandPlayers.remove(profile);
     }
 
     public boolean isGeyserAvailable() {

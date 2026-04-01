@@ -7,7 +7,7 @@
     "EntityAccessor",
     "ClientboundPlayerInfoUpdatePacketMixin",
     "ChunkMapAccessor",
-    "ServerConfigurationNetworkHandlerAccessor",
+    "ServerConfigurationPacketListenerImplAccessor",
     "ServerCommonPacketListenerImplMixin",
     "ServerPlayerEntityAccessor",
     "TextureUrlCheckerMixin"

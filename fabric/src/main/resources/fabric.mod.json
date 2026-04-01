@@ -25,6 +25,7 @@
       "xyz.eclipseisoffline.capecommand.fabric.CapeCommandFabric"
     ],
     "client": [
+      "xyz.eclipseisoffline.capecommand.fabric.CapeCommandFabric"
     ]
   },
   "accessWidener": "capecommand.accesswidener",

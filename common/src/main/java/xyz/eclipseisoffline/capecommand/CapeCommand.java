@@ -1,12 +1,15 @@
 package xyz.eclipseisoffline.capecommand;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
@@ -15,11 +18,13 @@ import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xyz.eclipseisoffline.capecommand.mixin.EntityAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ChunkMapAccessor;
+import xyz.eclipseisoffline.capecommand.mixin.ServerConfigurationPacketListenerImplAccessor;
 import xyz.eclipseisoffline.capecommand.mixin.ServerPlayerEntityAccessor;
 
 import java.nio.file.Path;
@@ -27,11 +32,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public abstract class CapeCommand {
-    public static final CustomPacketPayload.Type<CustomPacketPayload> INSTALLED_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("capecommand", "installed"));
-    public static final Logger LOGGER = LoggerFactory.getLogger("CapeCommand");
+    public static final String MOD_ID = "capecommand";
+    public static final CustomPacketPayload.Type<CustomPacketPayload> INSTALLED_PAYLOAD = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MOD_ID, "installed"));
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static CapeConfig config;
 
-    public void initialize() {
+    protected CapeCommand() {}
+
+    protected void initialize() {
         LOGGER.info("Initialising cape command");
         LOGGER.info("Trying to load config, if it exists");
         config = CapeConfig.readFromConfig(getConfigDir());
@@ -81,37 +89,42 @@ public abstract class CapeCommand {
                 )
         );
 
-        /*LOGGER.info("Registering server network handlers");
-        S2CConfigurationChannelEvents.REGISTER.register((handler, sender, server, channels) -> {
-            if (ServerConfigurationNetworking.canSend(handler, INSTALLED_ID)) {
-                GameProfile profile = ((ServerConfigurationNetworkHandlerAccessor) handler).getProfile();
-                LOGGER.info("Player {} has cape commands installed client side", profile.name());
-                CONFIG.registerCapeCommandPlayer(profile);
+        LOGGER.info("Registering server network handlers");
+        registerClientboundConfigurationCustomPayloadType(INSTALLED_PAYLOAD, new StreamCodec<>() {
+            @Override
+            public CustomPacketPayload decode(FriendlyByteBuf input) {
+                throw new AssertionError("This payload should not be sent");
+            }
+
+            @Override
+            public void encode(FriendlyByteBuf output, CustomPacketPayload value) {
+                throw new AssertionError("This payload should not be sent");
             }
         });
-        ServerPlayConnectionEvents.DISCONNECT.register(
-                ((handler, server) -> CONFIG.unregisterCapeCommandPlayer(handler.getPlayer())));*/
+        registerConfigurationNetworkingHandler(configurationPacketListener -> {
+            GameProfile profile = ((ServerConfigurationPacketListenerImplAccessor) configurationPacketListener).getGameProfile();
+            config.unregisterCapeCommandPlayer(profile);
+            if (canSendCustomPayload(configurationPacketListener, INSTALLED_PAYLOAD)) {
+                LOGGER.info("Player {} has cape commands installed client side", profile.name());
+                config.registerCapeCommandPlayer(profile);
+            }
+        });
     }
 
-    /*@Override
-    public void onInitializeClient() {
+    protected void initializeClient() {
         LOGGER.info("Registering client network handlers");
-        PayloadTypeRegistry.configurationS2C().register(INSTALLED_ID,
-                new PacketCodec<>() {
-                    @Override
-                    public CustomPayload decode(PacketByteBuf buf) {
-                        throw new AssertionError();
-                    }
-
-                    @Override
-                    public void encode(PacketByteBuf buf, CustomPayload value) {
-                        throw new AssertionError();
-                    }
-                });
-        ClientConfigurationNetworking.registerGlobalReceiver(INSTALLED_ID, (payload, context) -> {});
-    }*/
+        registerClientboundCustomPayloadHandler(INSTALLED_PAYLOAD, _ -> {});
+    }
 
     protected abstract void registerCommands(Consumer<CommandDispatcher<CommandSourceStack>> registerer);
+
+    protected abstract void registerConfigurationNetworkingHandler(Consumer<ServerConfigurationPacketListenerImpl> handler);
+
+    protected abstract <T extends CustomPacketPayload> void registerClientboundConfigurationCustomPayloadType(CustomPacketPayload.Type<T> type, StreamCodec<? super FriendlyByteBuf, T> codec);
+
+    protected abstract boolean canSendCustomPayload(ServerConfigurationPacketListenerImpl configurationPacketListener, CustomPacketPayload.Type<?> type);
+
+    protected abstract <T extends CustomPacketPayload> void registerClientboundCustomPayloadHandler(CustomPacketPayload.Type<T> type, Consumer<T> handler);
 
     protected abstract Path getConfigDir();
 
