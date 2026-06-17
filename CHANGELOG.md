@@ -1,2 +1,14 @@
-- Update to Minecraft 26.1.1.
-- Port to NeoForge
+- Update to Minecraft 26.2.
+- Added support for the following capes:
+  - `common`
+  - `moonlight_trail`
+  - `crafter`
+  - `builder`
+  - `zombie_horse`
+  - `oxeye`
+  - `blueprint`
+- The following capes can now be used without installing the mod on the client:
+  - `bacon`
+  - `valentine`
+  - `founders`
+  - `pancape`
