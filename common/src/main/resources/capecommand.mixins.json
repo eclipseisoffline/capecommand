@@ -2,15 +2,15 @@
   "required": true,
   "minVersion": "0.8",
   "package": "xyz.eclipseisoffline.capecommand.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "EntityAccessor",
-    "ClientboundPlayerInfoUpdatePacketMixin",
     "ChunkMapAccessor",
-    "ServerConfigurationPacketListenerImplAccessor",
+    "ClientboundPlayerInfoUpdatePacketMixin",
+    "EntityAccessor",
+    "MinecraftServicesDiscoveryServiceMixin",
     "ServerCommonPacketListenerImplMixin",
-    "ServerPlayerAccessor",
-    "TextureUrlCheckerMixin"
+    "ServerConfigurationPacketListenerImplAccessor",
+    "ServerPlayerAccessor"
   ],
   "client": [
     "PlayerInfoMixin"

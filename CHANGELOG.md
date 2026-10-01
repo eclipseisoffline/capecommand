@@ -1,14 +1,5 @@
-- Update to Minecraft 26.2.
+- Update to Minecraft 26.3.
 - Added support for the following capes:
-  - `common`
-  - `moonlight_trail`
-  - `crafter`
-  - `builder`
-  - `zombie_horse`
-  - `oxeye`
-  - `blueprint`
-- The following capes can now be used without installing the mod on the client:
-  - `bacon`
-  - `valentine`
-  - `founders`
-  - `pancape`
+  - `aurora`
+  - `hero`
+  - `twisted`

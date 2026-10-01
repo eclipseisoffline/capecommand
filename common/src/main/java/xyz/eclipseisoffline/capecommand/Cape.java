@@ -59,7 +59,10 @@ public enum Cape {
     BUILDER("https://textures.minecraft.net/texture/2c579968c64c1719740fd8c2a451461879b238002574fce48f7d1a7c36a1c7d4"),
     ZOMBIE_HORSE("https://textures.minecraft.net/texture/a3f6e4f14801f3ea55e3d95b9b4ef3b5e8802d947f669de93d6ec4b9354a436b"),
     OXEYE("https://textures.minecraft.net/texture/7706b5f5fc90329691e59277dcc66ba20572219fa8e5da472afd5235fad12cc8"),
-    BLUEPRINT("https://textures.minecraft.net/texture/fdcf48f01ec480d1d7cbec27f7ddce48c9da2be6724641109444dae58d4cd013");
+    BLUEPRINT("https://textures.minecraft.net/texture/fdcf48f01ec480d1d7cbec27f7ddce48c9da2be6724641109444dae58d4cd013"),
+    AURORA("https://textures.minecraft.net/texture/7c418dfbd37412a55e9f1425c9807a591ad10cf71b1edb576a587be9114c277f"),
+    HERO("https://textures.minecraft.net/texture/bb384a1079b9a6f2811520c7991b6e8150d02e5a96457e44509e30822f72f38e"),
+    TWISTED("https://textures.minecraft.net/texture/24aafc451aa2cc34ddc7265211678585c0ef4da4d32edb75ecec1bd8b5408381");
 
     private final String capeURL;
     private final boolean requiresClient;

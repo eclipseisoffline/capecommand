@@ -1,13 +1,13 @@
 package xyz.eclipseisoffline.capecommand.mixin;
 
-import com.mojang.authlib.yggdrasil.TextureUrlChecker;
+import com.mojang.authlib.services.MinecraftServicesDiscoveryService;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(TextureUrlChecker.class)
-public class TextureUrlCheckerMixin {
+@Mixin(MinecraftServicesDiscoveryService.class)
+public class MinecraftServicesDiscoveryServiceMixin {
 
     @Inject(method = "isAllowedTextureDomain", at = @At("TAIL"), cancellable = true)
     private static void noDomainWhitelist(String url, CallbackInfoReturnable<Boolean> callbackInfoReturnable) {
